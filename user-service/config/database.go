@@ -16,7 +16,7 @@ func InitDatabase() (*gorm.DB, error) {
 		encodedPassword,
 		config.Database.Host,
 		config.Database.Port,
-		config.Database.Name
+		config.Database.Name,
 	)
 
 	db, err := gorm.Open(postgres.Open(uri), &gorm.Config{})
