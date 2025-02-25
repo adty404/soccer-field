@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"errors"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 	errWrap "user-service/common/error"
@@ -16,7 +17,7 @@ type UserRepository struct {
 
 type IUserRepository interface {
 	Register(context.Context, *dto.RegisterRequest) (*models.User, error)
-	Update(context.Context, *dto.UpdateRequest) (*models.User, error)
+	Update(context.Context, *dto.UpdateRequest, string) (*models.User, error)
 	FindByUsername(context.Context, string) (*models.User, error)
 	FindByEmail(context.Context, string) (*models.User, error)
 	FindByUUID(context.Context, string) (*models.User, error)
@@ -59,5 +60,44 @@ func (r *UserRepository) Update(ctx context.Context, req *dto.UpdateRequest, uui
 		return nil, errWrap.WrapError(errConstant.ErrSQLError)
 	}
 
+	return &user, nil
+}
+
+func (r *UserRepository) FindByUsername(ctx context.Context, username string) (*models.User, error) {
+	var user models.User
+
+	err := r.db.WithContext(ctx).Preload("Role").Where("username = ?", username).First(&user).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errConstant.ErrUserNotFound
+		}
+		return nil, errWrap.WrapError(errConstant.ErrSQLError)
+	}
+	return &user, nil
+}
+
+func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*models.User, error) {
+	var user models.User
+
+	err := r.db.WithContext(ctx).Preload("Role").Where("email = ?", email).First(&user).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errConstant.ErrUserNotFound
+		}
+		return nil, errWrap.WrapError(errConstant.ErrSQLError)
+	}
+	return &user, nil
+}
+
+func (r *UserRepository) FindByUUID(ctx context.Context, uuid string) (*models.User, error) {
+	var user models.User
+
+	err := r.db.WithContext(ctx).Preload("Role").Where("uuid = ?", uuid).First(&user).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errConstant.ErrUserNotFound
+		}
+		return nil, errWrap.WrapError(errConstant.ErrSQLError)
+	}
 	return &user, nil
 }
