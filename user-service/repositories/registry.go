@@ -20,3 +20,8 @@ func NewRepositoryRegistry(db *gorm.DB) IRepositoryRegistry {
 func (r *Registry) GetUser() repositories.IUserRepository {
 	return repositories.NewUserRepository(r.db)
 }
+
+// struct Registry
+// interface IRepositoryRegistry
+// func NewRepositoryRegistry
+// Implement GetUser

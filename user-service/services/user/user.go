@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 	"user-service/config"
+	"user-service/constants"
 	errConstant "user-service/constants/error"
 	"user-service/domain/dto"
 	"user-service/domain/models"
@@ -218,6 +219,41 @@ func (u *UserServices) Update(ctx context.Context, request *dto.UpdateRequest, u
 		Username:    userResult.Username,
 		Email:       userResult.Email,
 		PhoneNumber: userResult.PhoneNumber,
+	}
+
+	return &data, nil
+}
+
+func (u *UserServices) GetUserLogin(ctx context.Context) (*dto.UserResponse, error) {
+	var (
+		userLogin = ctx.Value(constants.UserLogin).(*dto.UserResponse)
+		data      dto.UserResponse
+	)
+
+	data = dto.UserResponse{
+		UUID:        userLogin.UUID,
+		Name:        userLogin.Name,
+		Username:    userLogin.Username,
+		Email:       userLogin.Email,
+		Role:        userLogin.Role,
+		PhoneNumber: userLogin.PhoneNumber,
+	}
+
+	return &data, nil
+}
+
+func (u *UserServices) GetUserByUUID(ctx context.Context, uuid string) (*dto.UserResponse, error) {
+	user, err := u.repository.GetUser().FindByUUID(ctx, uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	data := dto.UserResponse{
+		UUID:        user.UUID,
+		Name:        user.Name,
+		Username:    user.Username,
+		Email:       user.Email,
+		PhoneNumber: user.PhoneNumber,
 	}
 
 	return &data, nil
