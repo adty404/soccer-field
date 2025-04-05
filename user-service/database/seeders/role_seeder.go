@@ -1,4 +1,4 @@
-package seeder
+package seeders
 
 import (
 	"github.com/sirupsen/logrus"

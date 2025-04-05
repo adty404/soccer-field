@@ -19,15 +19,17 @@ import (
 	services "user-service/services/user"
 )
 
-func HandlerPanic() gin.HandlerFunc {
+func HandlePanic() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
 			if r := recover(); r != nil {
 				logrus.Errorf("Recovered from panic: %v", r)
-				c.JSON(http.StatusInternalServerError, response.Response{
-					Status:  constants.Error,
-					Message: errConstant.ErrInternalServerError.Error(),
-				})
+				c.JSON(
+					http.StatusInternalServerError, response.Response{
+						Status:  constants.Error,
+						Message: errConstant.ErrInternalServerError.Error(),
+					},
+				)
 				c.Abort()
 			}
 		}()
@@ -39,10 +41,12 @@ func RateLimiter(lmt *limiter.Limiter) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		err := tollbooth.LimitByRequest(lmt, c.Writer, c.Request)
 		if err != nil {
-			c.JSON(http.StatusTooManyRequests, response.Response{
-				Status:  constants.Error,
-				Message: errConstant.ErrTooManyRequests.Error(),
-			})
+			c.JSON(
+				http.StatusTooManyRequests, response.Response{
+					Status:  constants.Error,
+					Message: errConstant.ErrTooManyRequests.Error(),
+				},
+			)
 			c.Abort()
 		}
 		c.Next()
@@ -58,10 +62,12 @@ func extractBearerToken(token string) string {
 }
 
 func responseUnauthorized(c *gin.Context, message string) {
-	c.JSON(http.StatusUnauthorized, response.Response{
-		Status:  constants.Error,
-		Message: message,
-	})
+	c.JSON(
+		http.StatusUnauthorized, response.Response{
+			Status:  constants.Error,
+			Message: message,
+		},
+	)
 	c.Abort()
 }
 
@@ -93,15 +99,17 @@ func validateBearerToken(c *gin.Context, token string) error {
 	}
 
 	claims := &services.Claims{}
-	tokenJwt, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		_, ok := token.Method.(*jwt.SigningMethodHMAC)
-		if !ok {
-			return nil, errConstant.ErrInvalidToken
-		}
+	tokenJwt, err := jwt.ParseWithClaims(
+		tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+			_, ok := token.Method.(*jwt.SigningMethodHMAC)
+			if !ok {
+				return nil, errConstant.ErrInvalidToken
+			}
 
-		jwtSecret := []byte(config.Config.JwtSecretKey)
-		return jwtSecret, nil
-	})
+			jwtSecret := []byte(config.Config.JwtSecretKey)
+			return jwtSecret, nil
+		},
+	)
 
 	if err != nil || !tokenJwt.Valid {
 		return errConstant.ErrUnauthorized
