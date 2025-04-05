@@ -76,7 +76,7 @@ var command = &cobra.Command{
 		router.Use(
 			func(c *gin.Context) {
 				c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-				c.Writer.Header().Set("Access-Contgrol-Allow-Methods", "GET, POST, PUT")
+				c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT")
 				c.Writer.Header().Set(
 					"Access-Control-Allow-Headers", "Content-Type, Authorization, x-service-name, "+
 						"x-api-key, x-request-at",
@@ -98,7 +98,9 @@ var command = &cobra.Command{
 		route.Serve()
 
 		port := fmt.Sprintf(":%d", config.Config.Port)
-		router.Run(port)
+		if err = router.Run(port); err != nil {
+			panic(err)
+		}
 	},
 }
 
