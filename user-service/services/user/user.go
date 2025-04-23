@@ -104,7 +104,7 @@ func (u *UserServices) isEmailExist(ctx context.Context, email string) bool {
 }
 
 func (u *UserServices) Register(ctx context.Context, req *dto.RegisterRequest) (*dto.RegisterResponse, error) {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*req.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
 	}
@@ -115,15 +115,16 @@ func (u *UserServices) Register(ctx context.Context, req *dto.RegisterRequest) (
 	if u.isEmailExist(ctx, req.Email) {
 		return nil, errConstant.ErrEmailExist
 	}
-	if req.Password != req.ConfirmPassword {
+	if *req.Password != req.ConfirmPassword {
 		return nil, errConstant.ErrPasswordDoesNotMatch
 	}
 
+	password := string(hashedPassword)
 	user, err := u.repository.GetUser().Register(
 		ctx, &dto.RegisterRequest{
 			Name:        req.Name,
 			Username:    req.Username,
-			Password:    string(hashedPassword),
+			Password:    &password,
 			Email:       req.Email,
 			PhoneNumber: req.PhoneNumber,
 			RoleID:      req.RoleID,
